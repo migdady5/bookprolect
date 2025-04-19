@@ -12,17 +12,24 @@ public class Appointment {
     private Long id;
 
     private String name;
+
     private LocalDate date;
+
     private LocalTime time;
 
+    private String notes; // ملاحظات الطبيب بعد الموعد
+
+    // --- Constructors ---
     public Appointment() {}
 
-    public Appointment(String name, LocalDate date, LocalTime time) {
+    public Appointment(String name, LocalDate date, LocalTime time, String notes) {
         this.name = name;
         this.date = date;
         this.time = time;
+        this.notes = notes;
     }
 
+    // --- Getters & Setters ---
     public Long getId() {
         return id;
     }
@@ -49,5 +56,13 @@ public class Appointment {
 
     public void setTime(LocalTime time) {
         this.time = time;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }

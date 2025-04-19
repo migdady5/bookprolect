@@ -13,31 +13,26 @@ public class AppointmentPageController {
     @Autowired
     private AppointmentRepository appointmentRepository;
 
-    // عرض صفحة كل المواعيد
+    // عرض كل المواعيد للمستخدم
     @GetMapping("/appointments")
-    public String showAppointmentsPage(Model model) {
+    public String viewAppointmentsPage(Model model) {
         model.addAttribute("appointments", appointmentRepository.findAll());
         return "appointments";
     }
 
-    // عرض صفحة الفورم
+    // عرض صفحة إضافة موعد
     @GetMapping("/appointments/add")
     public String showAddForm(Model model) {
         model.addAttribute("appointment", new Appointment());
         return "add-appointment";
     }
 
-    // معالجة الفورم
+    // حفظ الموعد بعد تعبئة الفورم
     @PostMapping("/appointments/add")
     public String handleFormSubmit(@ModelAttribute Appointment appointment, Model model) {
-        System.out.println("📥 الاسم: " + appointment.getName());
-        System.out.println("📅 التاريخ: " + appointment.getDate());
-        System.out.println("⏰ الوقت: " + appointment.getTime());
-
         appointmentRepository.save(appointment);
         model.addAttribute("message", "تم الحجز بنجاح ✅");
         model.addAttribute("appointments", appointmentRepository.findAll());
         return "appointments";
     }
 }
-
