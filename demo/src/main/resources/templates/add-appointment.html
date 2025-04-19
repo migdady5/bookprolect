@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>احجز موعدك</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+<div class="overlay">
+    <h2>احجز موعدك في عيادة الأسنان</h2>
+
+    <!-- ✅ نموذج الحجز -->
+    <form method="post" th:action="@{/appointments/add}" th:object="${appointment}">
+        <label for="name">الاسم:</label>
+        <input type="text" id="name" th:field="*{name}" placeholder="أدخل اسمك" required>
+
+        <label for="date">التاريخ:</label>
+        <input type="date" id="date" th:field="*{date}" required>
+
+        <label for="time">الوقت:</label>
+        <input type="time" id="time" th:field="*{time}" required>
+
+        <button type="submit">احجز</button>
+    </form>
+
+    <!-- ✅ رسالة النجاح -->
+    <div th:if="${message}" class="success-message">
+        <p th:text="${message}"></p>
+    </div>
+
+    <!-- ✅ رابط الرجوع -->
+    <a href="/appointments">عرض كل المواعيد</a>
+</div>
+</body>
+</html>
