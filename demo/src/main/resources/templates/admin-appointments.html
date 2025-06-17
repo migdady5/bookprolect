@@ -1,35 +1,0 @@
-<h2>لوحة تحكم الأدمن - قائمة المواعيد</h2>
-
-<table border="1">
-    <thead>
-    <tr>
-        <th>الاسم</th>
-        <th>التاريخ</th>
-        <th>الوقت</th>
-        <th>ملاحظات</th>
-        <th>إجراء</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="appointment : ${appointments}">
-        <td th:text="${appointment.name}">اسم</td>
-        <td th:text="${appointment.date}">تاريخ</td>
-        <td th:text="${appointment.time}">وقت</td>
-
-        <td>
-            <form th:action="@{'/admin/appointments/' + ${appointment.id} + '/notes'}" method="post">
-                <textarea name="notes" rows="2" cols="20" th:text="${appointment.notes}"></textarea>
-                <br>
-                <button type="submit">💾 تحديث</button>
-            </form>
-        </td>
-
-        <td>
-            <form th:action="@{'/admin/appointments/' + ${appointment.id} + '/delete'}" method="post"
-                  onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
-                <button type="submit">🗑 حذف</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
