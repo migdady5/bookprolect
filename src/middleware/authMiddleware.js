@@ -15,38 +15,44 @@ const authenticateToken = async (req, res, next) => {
 
     const db = admin.firestore();
 
-    // Check if the user is a doctor
+    // Check if the user is a doctor or admin in the Doctors collection
     const doctorSnap = await db.collection("Doctors")
       .where("authId", "==", uid)
       .limit(1)
       .get();
 
     if (!doctorSnap.empty) {
-      const doctorData = doctorSnap.docs[0].data();
+      const userData = doctorSnap.docs[0].data();
+      
+      // Determine role based on the role field in the document
+      const userRole = userData.role || 'doctor'; // Default to doctor if no role specified
+      
       req.user = {
         uid,
-        role: "doctor",
-        profile: doctorData
+        role: userRole, // This will be 'doctor' or 'admin'
+        profile: userData
       };
       return next();
     }
 
-    // Check if the user is a patient
-    const patientSnap = await db.collection("patients")
+    // Check if the user is a patient in the Patients collection
+    const patientSnap = await db.collection("Patients")
       .where("authId", "==", uid)
       .limit(1)
       .get();
 
     if (!patientSnap.empty) {
-      const patientData = patientSnap.docs[0].data();
+      const userData = patientSnap.docs[0].data();
+      
       req.user = {
         uid,
         role: "patient",
-        profile: patientData
+        profile: userData
       };
       return next();
     }
-// Optional: Check if admin (from custom claim or separate collection)
+
+    // Optional: Check if admin (from custom claim - legacy fallback)
     const userRecord = await admin.auth().getUser(uid);
     if (userRecord.customClaims?.role === "admin") {
       req.user = {
@@ -71,11 +77,24 @@ const requireRole = (role) => {
     }
 
     if (req.user.role !== role) {
-      return res.status(403).json({ error: "Access denied: ${role} role required" });
+      return res.status(403).json({ error: `Access denied: ${role} role required` });
     }
 
     next();
   };
+};
+
+// Middleware for patient routes - only doctors and admins can access
+const requireDoctorOrAdmin = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+
+  if (req.user.role !== "doctor" && req.user.role !== "admin") {
+    return res.status(403).json({ error: "Access denied: Doctor or admin role required" });
+  }
+
+  next();
 };
 
 // Optional convenience exports
@@ -85,8 +104,10 @@ const requireAdmin = requireRole("admin");
 
 module.exports = {
   authenticateToken,
+  authMiddleware: authenticateToken, // Alias for backward compatibility
   requireRole,
   requireDoctor,
   requirePatient,
-  requireAdmin
+  requireAdmin,
+  requireDoctorOrAdmin
 };

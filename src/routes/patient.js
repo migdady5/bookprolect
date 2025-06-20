@@ -4,20 +4,28 @@ const {
   getPatientById,
   createPatient,
   updatePatient,
-  deletePatient
+  deletePatient,
+  getAllPatients
 } = require('../controllers/patientController');
-const { authMiddleware } = require('../middleware/authMiddleware');
+const { authenticateToken, requireDoctorOrAdmin } = require('../middleware/authMiddleware');
 
-// GET /api/patients/:id
-router.get('/:id', authMiddleware, getPatientById);
+// Apply authentication and role check to all patient routes
+router.use(authenticateToken);
+router.use(requireDoctorOrAdmin);
 
-// POST /api/patients
-router.post('/', authMiddleware, createPatient);
+// GET /api/patients - Get all patients (doctors and admins only)
+router.get('/', getAllPatients);
 
-// PUT /api/patients/:id
-router.put('/:id', authMiddleware, updatePatient);
+// GET /api/patients/:id - Get specific patient
+router.get('/:id', getPatientById);
 
-// DELETE /api/patients/:id
-router.delete('/:id', authMiddleware, deletePatient);
+// POST /api/patients - Create new patient
+router.post('/', createPatient);
+
+// PUT /api/patients/:id - Update patient
+router.put('/:id', updatePatient);
+
+// DELETE /api/patients/:id - Delete patient
+router.delete('/:id', deletePatient);
 
 module.exports = router;

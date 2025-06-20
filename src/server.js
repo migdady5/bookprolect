@@ -3,7 +3,11 @@ const express = require('express');
 const cors = require('cors');
 
 const loginRoutes = require('./routes/login');
+const signupRoutes = require('./routes/signup');
 const patientRoutes = require('./routes/patient');
+const debugRoutes = require('./routes/debug');
+const testRoutes = require('./routes/test');
+const adminRoutes = require('./routes/admin');
 
 const { corsMiddleware } = require('./middleware/corsMiddleware');
 const { authMiddleware } = require('./middleware/authMiddleware');
@@ -24,9 +28,19 @@ app.get('/health', (req, res) => {
 
 // ✅ Public routes
 app.use('/api/auth', loginRoutes);
+app.use('/api/signup', signupRoutes);
 
-// ✅ Protected routes
-app.use('/api/patients', authMiddleware, patientRoutes);
+// ✅ Debug routes (for troubleshooting)
+app.use('/api/debug', debugRoutes);
+
+// ✅ Test routes (for debugging)
+app.use('/api/test', testRoutes);
+
+// ✅ Admin routes (for role assignment)
+app.use('/api/admin', adminRoutes);
+
+// ✅ Protected routes (authentication applied in route files)
+app.use('/api/patients', patientRoutes);
 
 // ✅ Test protected route
 app.get('/api/protected', authMiddleware, (req, res) => {
