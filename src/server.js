@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const loginRoutes = require('./routes/login');
+const signupRoutes = require('./routes/signupPatients');
 const { corsMiddleware } = require('./middleware/corsMiddleware');
 const { authMiddleware } = require('./middleware/authMiddleware');
 
@@ -21,7 +22,7 @@ app.get('/health', (req, res) => {
 
 // Routes
 app.use('/api/auth', loginRoutes);
-
+app.use('/api/auth', signupRoutes);
 // Protected route example
 app.get('/api/protected', authMiddleware, (req, res) => {
   res.json({ message: 'This is a protected route', user: req.user });
