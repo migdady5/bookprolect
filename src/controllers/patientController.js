@@ -131,6 +131,47 @@ exports.createPatient = async (req, res) => {
   }
 };
 
+// GET /api/patients/:id/full - Get patient with full history
+exports.getPatientWithHistory = async (req, res) => {
+  try {
+    const patientId = req.params.id;
+
+    console.log(`📋 ${req.user.role} ${req.user.profile.name || req.user.profile.email} fetching full profile for patient ${patientId}`);
+
+    // Get patient doc
+    const patientDoc = await db.collection('Patients').doc(patientId).get();
+    if (!patientDoc.exists) {
+      return res.status(404).json({ message: 'Patient not found', patientId });
+    }
+
+    // Get history records
+    const historySnapshot = await db.collection('patint_history')
+      .where('patient_id', '==', patientId)
+      .get();
+
+    const history = [];
+    historySnapshot.forEach(doc => {
+      history.push({ id: doc.id, ...doc.data() });
+    });
+
+    return res.status(200).json({
+      message: 'Full patient profile retrieved',
+      patient: {
+        id: patientDoc.id,
+        ...patientDoc.data()
+      },
+      history,
+      accessedBy: {
+        role: req.user.role,
+        name: req.user.profile.name || req.user.profile.email
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error fetching full patient profile:', error);
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 // PUT /api/patients/:id - Update patient
 exports.updatePatient = async (req, res) => {
   try {
@@ -233,5 +274,84 @@ exports.deletePatient = async (req, res) => {
       message: 'Server error', 
       error: error.message 
     });
+  }
+};
+
+// POST /api/patients/:id/history - Add medical record
+exports.addPatientHistory = async (req, res) => {
+  try {
+    const patientId = req.params.id;
+    const {
+      diag,
+      treatment,
+      notes,
+      cost,
+      payment_method,
+      doctor_name,
+      attachments
+    } = req.body;
+
+    if (!diag || !treatment || !cost || !payment_method || !doctor_name) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    const historyData = {
+      diag,
+      treatment,
+      notes: notes || '',
+      cost,
+      payment_method,
+      doctor_name,
+      attachments: attachments || null,
+      patient_id: patientId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdBy: req.user.uid
+    };
+
+    const docRef = await db.collection('patint_history').add(historyData);
+
+    return res.status(201).json({
+      message: 'History record added',
+      id: docRef.id,
+      data: historyData
+    });
+
+  } catch (error) {
+    console.error('❌ Error adding patient history:', error);
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// GET /api/patients/username/:username - Get patient by username
+exports.getPatientByUsername = async (req, res) => {
+  try {
+    const username = req.params.username.trim();
+    console.log(req.params.username);
+
+    console.log(`🔍 ${req.user.role} ${req.user.profile.name || req.user.profile.email} fetching patient by username: ${username}`);
+
+    const patientsRef = db.collection('Patients');
+    const snapshot = await patientsRef.where('username', '==', username).get();
+
+    if (snapshot.empty) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    const patients = [];
+    snapshot.forEach(doc => {
+      patients.push({ id: doc.id, ...doc.data() });
+    });
+
+    return res.status(200).json({ 
+      message: 'Patient(s) found by username',
+      patients,
+      accessedBy: {
+        role: req.user.role,
+        name: req.user.profile.name || req.user.profile.email
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error fetching patient by username:', error);
+    return res.status(500).json({ error: 'Something went wrong' });
   }
 };
