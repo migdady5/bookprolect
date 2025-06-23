@@ -8,6 +8,8 @@ const patientRoutes = require('./routes/patient');
 const debugRoutes = require('./routes/debug');
 const testRoutes = require('./routes/test');
 const adminRoutes = require('./routes/admin');
+const doctorRoutes = require('./routes/doctor');
+const appointmentsRoutes = require('./routes/appointments');
 
 const { corsMiddleware } = require('./middleware/corsMiddleware');
 const { authMiddleware } = require('./middleware/authMiddleware');
@@ -41,6 +43,8 @@ app.use('/api/admin', adminRoutes);
 
 // ✅ Protected routes (authentication applied in route files)
 app.use('/api/patients', patientRoutes);
+app.use('/api/doctors', doctorRoutes);
+app.use('/api/appointments', appointmentsRoutes);
 
 // ✅ Test protected route
 app.get('/api/protected', authMiddleware, (req, res) => {
